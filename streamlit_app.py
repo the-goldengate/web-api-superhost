@@ -3,6 +3,7 @@ from openai import OpenAI
 import pandas as pd
 import pickle
 from sklearn.preprocessing import LabelEncoder # scikit-learn
+from pathlib import Path
 
 # Show title and description.
 st.title("📄 Superhost prediction by The Golden Gate")
@@ -11,10 +12,11 @@ st.write(
     "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
 )
 
-model_path = "/workspaces/web-api-superhost/Gradient_Boosting_Classifier_SMOTE.pkl"
+# model_path = "https://raw.githubusercontent.com/the-goldengate/web-api-superhost/refs/heads/main/Gradient_Boosting_Classifier_SMOTE.pkl"
+model_path = Path(__file__).parent / 'Gradient_Boosting_Classifier_SMOTE.pkl' 
 
-df = pd.read_csv('/workspaces/web-api-superhost/data.csv', delimiter=";")
-ex = pd.read_csv('/workspaces/web-api-superhost/example.csv', delimiter=";")
+df = pd.read_csv('https://raw.githubusercontent.com/the-goldengate/web-api-superhost/refs/heads/main/data.csv', delimiter=";")
+ex = pd.read_csv('https://raw.githubusercontent.com/the-goldengate/web-api-superhost/refs/heads/main/example.csv', delimiter=";")
 
 def load_model(pkl):
     with open(pkl, "rb") as file:
