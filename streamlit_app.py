@@ -1,53 +1,85 @@
 import streamlit as st
 from openai import OpenAI
+import pandas as pd
+import pickle
+from sklearn.preprocessing import LabelEncoder # scikit-learn
 
 # Show title and description.
-st.title("📄 Document question answering")
+st.title("📄 Superhost prediction by The Golden Gate")
 st.write(
     "Upload a document below and ask a question about it – GPT will answer! "
     "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
 )
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
+model_path = "/workspaces/web-api-superhost/Gradient_Boosting_Classifier_SMOTE.pkl"
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+df = pd.read_csv('/workspaces/web-api-superhost/data.csv', delimiter=";")
+ex = pd.read_csv('/workspaces/web-api-superhost/example.csv', delimiter=";")
 
-    # Let the user upload a file via `st.file_uploader`.
-    uploaded_file = st.file_uploader(
-        "Upload a document (.txt or .md)", type=("txt", "md")
-    )
+def load_model(pkl):
+    with open(pkl, "rb") as file:
+        pkl = pickle.load(file)
+    return pkl
 
-    # Ask the user for a question via `st.text_area`.
-    question = st.text_area(
-        "Now ask a question about the document!",
-        placeholder="Can you give me a short summary?",
-        disabled=not uploaded_file,
-    )
+# Fungsi untuk melakukan Label Encoding
+def encode_categorical_columns(df):
+    label_encoders = {}
+    for col in df.select_dtypes(include=['object', 'category', 'bool']).columns:
+        le = LabelEncoder()
+        df[col] = le.fit_transform(df[col])
+        label_encoders[col] = le
+    return df, label_encoders
 
-    if uploaded_file and question:
+tab1, tab2, tab3 = st.tabs(["Form", "CSV", "Example"])
 
-        # Process the uploaded file and question.
-        document = uploaded_file.read().decode()
-        messages = [
-            {
-                "role": "user",
-                "content": f"Here's a document: {document} \n\n---\n\n {question}",
-            }
-        ]
+with tab1:
+    st.header("Form Input")
+    st.write('**Ubah data sesuai yang diinginkan**')
 
-        # Generate an answer using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            stream=True,
-        )
+    # Pastikan setiap user memiliki salinan data sendiri
+    if "user_df" not in st.session_state:
+        st.session_state.user_df = df.copy()
 
-        # Stream the response to the app using `st.write_stream`.
-        st.write_stream(stream)
+    # Menampilkan data editor hanya untuk user ini
+    edited_df = st.data_editor(st.session_state.user_df)
+
+    # Tombol untuk menyimpan perubahan (hanya berlaku untuk user ini)
+    if st.button("Simpan Perubahan"):
+        st.session_state.user_df = edited_df
+        st.success("Perubahan berhasil disimpan!")
+    
+
+with tab2:
+    st.header("CSV Input")
+    uploaded_file = st.file_uploader("Upload a document (.csv)", type=(["csv"]))
+    if uploaded_file is not None:
+        # Membaca CSV menjadi DataFrame
+        df_uploaded = pd.read_csv(uploaded_file, delimiter=";")
+        
+        # Menampilkan data yang telah diunggah
+        st.write("### Preview data yang diunggah:")
+        st.dataframe(df_uploaded)
+
+with tab3:
+    st.header("Examples")
+    st.write('**Dummy Data**')
+    st.dataframe(ex)
+
+    model = load_model(model_path)
+    df_encoded, encoders = encode_categorical_columns(ex)
+
+    # **Pastikan model yang di-load benar-benar objek, bukan string**
+    if not hasattr(model, "predict"):
+        st.error("Model tidak valid! Pastikan file .pkl adalah model yang sudah dilatih.")
+    else:
+        # **Melakukan prediksi**
+        predictions = model.predict(df_encoded)
+        prediction_proba = model.predict_proba(df_encoded)[:, 1]  # Ambil probabilitas kelas "Superhost"
+
+        # Buat kolom hasil prediksi
+        ex["Superhost Probability"] = prediction_proba
+        ex["Superhost Status"] = ex["Superhost Probability"].apply(lambda x: "Superhost" if x >= 0.5 else "Bukan Superhost")
+
+        # Menampilkan hasil prediksi
+        st.write("### Hasil Prediksi:")
+        st.dataframe(ex[["Superhost Probability", "Superhost Status"]])
