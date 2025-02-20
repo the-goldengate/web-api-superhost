@@ -2,6 +2,10 @@
 
 Aplikasi web ini menggunakan model machine learning untuk memprediksi status **Superhost** dari data AirBnb. Dibangun dengan Streamlit, aplikasi ini menyediakan fitur untuk mengunggah data CSV dan melihat hasil prediksi.
 
+## **Domain Demo Website Streamlit**
+
+`https://superhost.streamlit.app/`
+
 ## **💻 Feature Web Application**
 
 - **Prediksi Status Superhost:**
