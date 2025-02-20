@@ -18,8 +18,6 @@ with open(model_path, 'rb') as file:
     model = pickle.load(file)
 
 def model_output(model, data):
-
-
     df_encoded, encoders = encode_categorical_columns(data)
 
     # **Pastikan model yang di-load benar-benar objek, bukan string**
@@ -67,11 +65,6 @@ def encode_categorical_columns(df):
         df[col] = le.fit_transform(df[col])
         label_encoders[col] = le
     return df, label_encoders
-
-@st.cache_data
-def convert_df(df):
-    # IMPORTANT: Cache the conversion to prevent computation on every rerun
-    return df.to_csv().encode("utf-8")
 
 tab1, tab2 = st.tabs(["Test", "Example"])
 
