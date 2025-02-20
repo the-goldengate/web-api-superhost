@@ -1,6 +1,6 @@
 # 📄 The Golden Gate
 
-A simple Streamlit app that predict a host is superhost or not.
+A simple Streamlit app that predict a host is superhost or not
 
 ### How to run it on your own machine
 
