@@ -1,4 +1,4 @@
-# **📝 Aplikasi Prediksi Superhost AirBnb - by The Golden Gate**
+# **📝 Application Prediction Superhost AirBnb - by The Golden Gate**
 
 Aplikasi web ini menggunakan model machine learning untuk memprediksi status **Superhost** dari data AirBnb. Dibangun dengan Streamlit, aplikasi ini menyediakan fitur untuk mengunggah data CSV dan melihat hasil prediksi.
 
