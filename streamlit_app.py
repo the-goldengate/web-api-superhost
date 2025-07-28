@@ -6,13 +6,32 @@ from pathlib import Path
 
 # Show title and description.
 st.title("📄 Superhost prediction by The Golden Gate")
-st.write("AirBnb adalah sebuah platform yang menyediakan pemilik properti (host) untuk menyewakan property kepada tamu atau penyewa.")
-st.write("Aplikasi ini dapat memprediksi pemilik properti dengan masukan atau input yang sudah sediakan dengan 23 kolom.")
+st.write("AirBnb adalah sebuah platform yang menyediakan pemilik properti (host) untuk menyewakan property kepada tamu atau penyewa. " \
+"Aplikasi ini dapat memprediksi pemilik properti dengan masukan atau input yang sudah sediakan dengan 23 kolom.")
 st.write("**User bisa melihat contoh pada tab bagian *'Example'* untuk melihat contoh data dan hasil prediksinya**")
+st.write("Tata cara menguji coba aplikasi ini sebagai berikut:")
+st.write("1. Download **File Example CSV** dibawah ini")
+st.write("2. Ubah value atau angka data yang ingin diinput (optional)")
+st.write("3. Upload file tadi dengan cara **Browse files** atau **Drag & drop** file tersebut")
+df = pd.read_csv('https://raw.githubusercontent.com/the-goldengate/web-api-superhost/refs/heads/main/data_example_2.0.csv', delimiter=";")
+
+@st.cache_data
+def convert_df_to_csv(df):
+    # Penting: Menggunakan to_csv untuk mengonversi DataFrame kembali ke format string CSV
+    return df.to_csv(index=False, sep=';').encode('utf-8')
+
+try:
+    download_file = convert_df_to_csv(df)
+    st.download_button(
+        label="File Example CSV 📄",
+        data=download_file,
+        file_name='data_example_2.0.csv', # Nama file yang akan diunduh user
+        mime='text/csv',
+    )
+except Exception as e:
+    st.error(f"Gagal memuat data dari URL. Error: {e}")
 
 model_path = Path(__file__).parent / 'Gradient_Boosting_Classifier_RandomOverSampling.pkl' 
-
-df = pd.read_csv('https://raw.githubusercontent.com/the-goldengate/web-api-superhost/refs/heads/main/data_example_2.0.csv', delimiter=";")
 
 with open(model_path, 'rb') as file:
     model = pickle.load(file)
